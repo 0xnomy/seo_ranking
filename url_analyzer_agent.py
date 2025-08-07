@@ -13,7 +13,6 @@ class URLAnalyzerAgent:
     
     @tool
     def analyze_urls(self, seo_data: dict) -> dict:
-        """Analyze URL structure for SEO optimization using only the provided JSON data. Output only markdown tables, lists, and referenced facts. No generic advice."""
         try:
             # Add delay before API call to prevent rate limiting
             delay_between_calls(Config.API_CALL_DELAY)

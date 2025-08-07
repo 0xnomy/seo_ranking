@@ -13,7 +13,6 @@ class ImageAnalyzerAgent:
         self.groq_client = Groq(api_key=Config.GROQ_API_KEY)
     
     def analyze_images(self, seo_data: dict) -> dict:
-        """Analyze all images in the SEO data using the full JSON for fact-based, referenced, and numerical outputs. Only process .jpeg, .jpg, .png, .webp files. Output only markdown tables, lists, and referenced facts. No generic advice. Only processes first 2 images for vision analysis."""
         try:
             # Use the dict directly
             seo_data_dict = seo_data

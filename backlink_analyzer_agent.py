@@ -13,7 +13,6 @@ class BacklinkAnalyzerAgent:
     
     @tool
     def analyze_backlinks(self, seo_data: dict) -> dict:
-        """Analyze backlinks for quality, relevance, and SEO impact using only the provided JSON data. Output only markdown tables, lists, and referenced facts. No generic advice."""
         try:
             # Add delay before API call to prevent rate limiting
             delay_between_calls(Config.API_CALL_DELAY)

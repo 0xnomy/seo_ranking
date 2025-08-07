@@ -13,7 +13,6 @@ class KeywordAnalyzerAgent:
     
     @tool
     def analyze_keywords(self, seo_data: dict) -> dict:
-        """Analyze keywords for SEO performance using only the provided JSON data. Output only markdown tables, lists, and referenced facts. No generic advice."""
         try:
             # Add delay before API call to prevent rate limiting
             delay_between_calls(Config.API_CALL_DELAY)

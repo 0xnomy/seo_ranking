@@ -18,7 +18,8 @@ class ScraperAgent:
         os.makedirs(Config.IMAGES_DIR, exist_ok=True)
 
     def scrape_website(self, url: str) -> dict:
-        """Scrape a website, download images, and extract essential SEO content using Playwright"""
+        """
+        """
         try:
             # Use a new event loop for Windows compatibility
             import asyncio
@@ -51,7 +52,8 @@ class ScraperAgent:
             return {"error": str(e)}
 
     def _scrape_website_sync(self, url: str) -> dict:
-        """Synchronous fallback scraping method using requests and BeautifulSoup"""
+        """
+        """
         try:
             import requests
             from bs4 import BeautifulSoup
@@ -295,7 +297,8 @@ class ScraperAgent:
             return result
 
     async def _extract_meta_tags(self, page):
-        """Extract essential meta tags for SEO"""
+        """
+        """
         meta_tags = {}
         
         try:
@@ -323,7 +326,8 @@ class ScraperAgent:
         return meta_tags
 
     async def _extract_headings(self, page):
-        """Extract headings with limits to reduce token usage"""
+        """
+        """
         headings = {}
         
         try:
@@ -351,7 +355,8 @@ class ScraperAgent:
         return headings
 
     async def _extract_paragraphs(self, page):
-        """Extract paragraphs with limits to reduce token usage"""
+        """
+        """
         paragraphs = []
         
         try:

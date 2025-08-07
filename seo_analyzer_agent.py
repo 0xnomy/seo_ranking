@@ -13,7 +13,6 @@ class SEOAnalyzerAgent:
     
     @tool
     def analyze_seo_performance(self, seo_data: dict) -> dict:
-        """Generate comprehensive SEO report using only the provided JSON data and previous agent outputs. Output only markdown tables, lists, and referenced facts. No generic advice. Save the report as a .txt file in the output folder."""
         try:
             # Add delay before API call to prevent rate limiting
             delay_between_calls(Config.API_CALL_DELAY)

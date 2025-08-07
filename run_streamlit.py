@@ -1,8 +1,4 @@
 #!/usr/bin/env python3
-"""
-Streamlit App Launcher for SEO Analysis Tool
-"""
-
 import os
 import sys
 import subprocess
@@ -12,7 +8,6 @@ import dotenv
 dotenv.load_dotenv()
 
 def check_requirements():
-    """Check if required packages are installed"""
     required_packages = [
         'streamlit',
         'plotly', 
@@ -36,7 +31,6 @@ def check_requirements():
     return True
 
 def check_environment():
-    """Check if environment is properly configured"""
     if not os.getenv('GROQ_API_KEY'):
         print("❌ GROQ_API_KEY not found in environment variables")
         print("Please set your GROQ_API_KEY in a .env file or environment variables")
@@ -45,7 +39,6 @@ def check_environment():
     return True
 
 def install_playwright_browser():
-    """Install Playwright browser if not already installed"""
     try:
         import playwright
         # Check if browser is installed
