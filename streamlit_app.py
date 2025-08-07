@@ -242,7 +242,14 @@ def load_analysis_results(url):
         
         if os.path.exists(json_file):
             with open(json_file, 'r', encoding='utf-8') as f:
-                data = json.load(f)
+                content = f.read()
+                if not content.strip():
+                    st.error("Analysis results file is empty. Please re-run the analysis.")
+                    return None
+                data = json.loads(content)
+                if 'error' in data:
+                    st.error(f"Analysis failed: {data['error']}")
+                    return None
         else:
             # If no JSON file found, return basic data
             return {
@@ -325,10 +332,8 @@ def load_analysis_results(url):
         return analysis_data
         
     except Exception as e:
-        return {
-            'url': url,
-            'error': f'Failed to load results: {str(e)}'
-        }
+        st.error(f"Failed to load results: {str(e)}")
+        return None
 
 def create_radar_chart(scores):
     """Create a radar chart for SEO scores"""
@@ -559,7 +564,12 @@ def main():
         st.write(f"Debug: Current URL: {st.session_state.current_url}")
         st.write(f"Debug: Results keys: {list(results.keys()) if results else 'No results'}")
         
-        if 'error' in results:
+        if not results: # Check if results is None or empty
+            st.info("Analysis completed. No results to display.")
+            # Add a button to retry loading
+            if st.button("🔄 Retry Loading Results"):
+                st.rerun()
+        elif 'error' in results:
             st.error(f"Error loading results: {results['error']}")
             # Add a button to retry loading
             if st.button("🔄 Retry Loading Results"):

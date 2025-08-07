@@ -19,12 +19,11 @@ class SEOAnalyzerAgent:
             delay_between_calls(Config.API_CALL_DELAY)
             
             prompt = f"""
-            Generate a brief SEO analysis report using only the provided JSON data. Output ONLY:
-            - Executive summary (2-3 sentences)
-            - 3 priority action items
-            - Overall SEO score (1-10)
-            - No generic advice. Only reference the JSON data.
-            
+            Using the following JSON and all previous agent outputs, generate a concise, fact-based SEO report. Output ONLY:
+            - A summary table of key metrics (content, keywords, images, backlinks, URLs).
+            - A prioritized list of factual, referenced action items.
+            - No generic advice. Only reference the data provided.
+            Output in markdown format.
             JSON: {json.dumps(seo_data)}
             """
             
@@ -37,7 +36,7 @@ class SEOAnalyzerAgent:
                             {"role": "system", "content": "You are an expert SEO report generator."},
                             {"role": "user", "content": prompt}
                         ],
-                        max_tokens=200
+                        max_tokens=500
                     )
                     report = response.choices[0].message.content.strip()
                     domain = urlparse(seo_data.get('url', 'unknown')).netloc

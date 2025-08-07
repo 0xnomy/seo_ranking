@@ -123,6 +123,8 @@ class SEOCrew:
 
     def run_analysis(self, url: str):
         """Run the complete SEO analysis pipeline"""
+        domain = urlparse(url).netloc
+        final_json_file = os.path.join(Config.OUTPUT_DIR, f"{domain.replace('.', '_')}_analysis.json")
         try:
             print(f"🚀 Starting comprehensive SEO analysis for: {url}")
             print("⏳ This may take several minutes...")
@@ -130,37 +132,26 @@ class SEOCrew:
             scraped_data = self.scraper_agent.scrape_website(url)
             if "error" in scraped_data:
                 print(f"❌ Scraping failed: {scraped_data['error']}")
+                # Always write error JSON
+                with open(final_json_file, 'w', encoding='utf-8') as f:
+                    json.dump({'error': scraped_data['error'], 'url': url}, f)
                 return scraped_data
             print("✅ Scraping completed successfully!")
             print(f"📄 Found: {len(scraped_data.get('paragraphs', []))} paragraphs, {len(scraped_data.get('images', []))} images")
             tasks = self.create_tasks(scraped_data)
+            crew = Crew(
+                agents=[
+                    self.content_analyzer_crew_agent,
+                    self.image_analyzer_crew_agent,
+                    self.seo_analyzer_crew_agent
+                ],
+                tasks=tasks,
+                verbose=True
+            )
             print("🤖 Step 2: Running AI analysis...")
-            # Run tasks with delays between them to prevent rate limiting
-            print("📝 Running content analysis...")
-            content_result = self.content_analyzer_crew_agent.execute_task(tasks[0])
-            time.sleep(Config.API_CALL_DELAY)
-            
-            print("🖼️ Running image analysis...")
-            image_result = self.image_analyzer_crew_agent.execute_task(tasks[1])
-            time.sleep(Config.API_CALL_DELAY)
-            
-            print("📊 Running SEO report generation...")
-            seo_result = self.seo_analyzer_crew_agent.execute_task(tasks[2])
-            
-            # Combine results manually
-            result = type('CrewOutput', (), {
-                'raw': {
-                    'content_analysis': content_result,
-                    'image_analysis': image_result,
-                    'seo_report': seo_result
-                }
-            })()
-            
-            # Add delay after crew analysis to prevent rate limiting
+            result = crew.kickoff()
             print(f"⏳ Waiting {Config.API_CALL_DELAY} seconds before image analysis...")
             time.sleep(Config.API_CALL_DELAY)
-            
-            # Step 3: Run image analysis with vision model
             print("🖼️ Step 3: Running image analysis with vision model...")
             try:
                 image_result = self.image_analyzer.analyze_images(scraped_data)
@@ -170,65 +161,58 @@ class SEOCrew:
                     print(f"⚠️ Image analysis had issues: {image_result}")
             except Exception as e:
                 print(f"⚠️ Image analysis failed: {str(e)}")
-            
-            # Add another delay before saving results
-            print(f"⏳ Waiting {Config.API_CALL_DELAY} seconds before saving results...")
-            time.sleep(Config.API_CALL_DELAY)
-            
             # Save the final combined results to JSON
             try:
-                domain = urlparse(url).netloc
-                final_json_file = os.path.join(Config.OUTPUT_DIR, f"{domain.replace('.', '_')}_analysis.json")
-                
                 # Combine scraped data with analysis results
                 final_data = scraped_data.copy()
-                
                 # Add analysis results if available
                 if hasattr(result, 'raw') and result.raw:
-                    # Handle CrewOutput raw data
                     if isinstance(result.raw, dict):
                         final_data.update(result.raw)
                     elif isinstance(result.raw, str):
-                        # Try to parse JSON from string
                         try:
                             import json
                             parsed_data = json.loads(result.raw)
                             if isinstance(parsed_data, dict):
                                 final_data.update(parsed_data)
                         except:
-                            # If it's not JSON, add as text
                             final_data['analysis_report'] = result.raw
                 elif isinstance(result, dict):
                     final_data.update(result)
                 elif hasattr(result, 'result') and result.result:
-                    # Handle CrewOutput result attribute
                     if isinstance(result.result, dict):
                         final_data.update(result.result)
                     elif isinstance(result.result, str):
                         final_data['analysis_report'] = result.result
-                
-                # Save to JSON
-                with open(final_json_file, 'w', encoding='utf-8') as f:
-                    json.dump(final_data, f, indent=2, ensure_ascii=False)
-                
+                # Only write valid JSON if no error
+                if 'error' not in final_data:
+                    with open(final_json_file, 'w', encoding='utf-8') as f:
+                        json.dump(final_data, f, indent=2, ensure_ascii=False)
+                else:
+                    # Write a valid error JSON
+                    with open(final_json_file, 'w', encoding='utf-8') as f:
+                        json.dump({'error': final_data['error'], 'url': url}, f)
                 print(f"📄 Final results saved to: {final_json_file}")
             except Exception as e:
                 print(f"⚠️ Warning: Could not save final results: {str(e)}")
-                # Save at least the scraped data
                 try:
-                    domain = urlparse(url).netloc
-                    final_json_file = os.path.join(Config.OUTPUT_DIR, f"{domain.replace('.', '_')}_analysis.json")
                     with open(final_json_file, 'w', encoding='utf-8') as f:
-                        json.dump(scraped_data, f, indent=2, ensure_ascii=False)
-                    print(f"📄 Scraped data saved to: {final_json_file}")
+                        json.dump({'error': str(e), 'url': url}, f)
+                    print(f"📄 Error results saved to: {final_json_file}")
                 except Exception as e2:
-                    print(f"❌ Failed to save even scraped data: {str(e2)}")
-            
+                    print(f"❌ Failed to save error JSON: {str(e2)}")
             print("\n✅ Comprehensive SEO analysis completed!")
             print(f"📁 Results saved in: {Config.OUTPUT_DIR}")
             return result
         except Exception as e:
             print(f"❌ Error during analysis: {str(e)}")
+            # Always write error JSON
+            try:
+                with open(final_json_file, 'w', encoding='utf-8') as f:
+                    json.dump({'error': str(e), 'url': url}, f)
+                print(f"📄 Error results saved to: {final_json_file}")
+            except Exception as e2:
+                print(f"❌ Failed to save error JSON: {str(e2)}")
             return {"error": str(e)}
 
 def validate_url(url: str) -> str:

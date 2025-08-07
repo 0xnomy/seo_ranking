@@ -14,7 +14,7 @@ class Config:
     # Rate limiting settings
     RATE_LIMIT_DELAY = 30  # seconds to wait when rate limited
     MAX_RETRIES = 3  # maximum retries for rate limited requests
-    API_CALL_DELAY = 25  # seconds to wait between API calls to prevent rate limiting
+    API_CALL_DELAY = 15  # seconds to wait between API calls to prevent rate limiting
 
     # File paths
     OUTPUT_DIR = "seo_output"
